@@ -9,8 +9,8 @@
 
 | スキル名 | コマンド | 説明 |
 |---|---|---|
-| offkai-helper | `/offkai-helper` | オフ会で使える質問文を作ってくれる |
-| uranai-maker | `/uranai-maker` | オリジナル占いアプリを対話形式で自動生成 |
+| offkai-helper.md | `/offkai-helper` | オフ会で使える質問文を作ってくれる |
+| uranai-maker.md | `/uranai-maker` | オリジナル占いアプリを対話形式で自動生成 |
 
 ---
 
@@ -28,10 +28,17 @@ git clone https://github.com/iidaatcnt/offkai-helper-skills.git
 ### 2. スキルファイルをコピー
 
 使いたいスキルの `.md` ファイルを `~/.claude/commands/` にコピーします。
+**ファイル名がそのままスラッシュコマンド名になります。**
 
 ```bash
+# コマンドフォルダを作成（初回のみ）
+mkdir -p ~/.claude/commands
+
 # 例: uranai-maker をインストール
 cp uranai-maker.md ~/.claude/commands/uranai-maker.md
+
+# 例: offkai-helper をインストール
+cp offkai-helper.md ~/.claude/commands/offkai-helper.md
 ```
 
 ### 3. Claude Code を再起動
