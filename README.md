@@ -1,62 +1,64 @@
-# 🐊 offkai-helper — オフ会質問作文支援スキル
+# 🐊 offkai-helper-skills — Claude Code スキル集
 
-Claude Codeのオフ会で使える質問作文スキルです。
-モヤッとした悩みを入力するだけで、他の参加者に聞きやすい質問文を作ってくれます。
+サバ缶が作った Claude Code 用スキルの置き場所です。
+スキルをインストールすることで、Claude Code に新しいコマンドが追加されます。
 
 ---
 
-## インストール手順
+## スキル一覧
 
-### 1. このファイルをダウンロードする
+| スキル名 | コマンド | 説明 |
+|---|---|---|
+| offkai-helper | `/offkai-helper` | オフ会で使える質問文を作ってくれる |
+| uranai-maker | `/uranai-maker` | オリジナル占いアプリを対話形式で自動生成 |
 
-画面右上の緑の「Code」ボタンをクリックして、「Download ZIP」を選びます。
-ダウンロードしたZIPファイルを解凍してください。
+---
 
-### 2. スキルフォルダを作る
+## インストール方法
 
-以下のフォルダに `offkai-helper` というフォルダを作ります。
+### 1. このリポジトリをダウンロード
 
-**Macの場合：**
-```
-~/.claude/skills/offkai-helper/
-```
+画面右上の緑の「Code」ボタン → 「Download ZIP」を選択して解凍。
 
-ターミナルで次のコマンドを実行すると作れます：
+または git clone:
 ```bash
-mkdir -p ~/.claude/skills/offkai-helper
+git clone https://github.com/iidaatcnt/offkai-helper-skills.git
 ```
 
-### 3. SKILL.md をコピーする
+### 2. スキルファイルをコピー
 
-解凍したフォルダの中にある `SKILL.md` を、さきほど作ったフォルダにコピーします。
+使いたいスキルの `.md` ファイルを `~/.claude/commands/` にコピーします。
 
 ```bash
-cp SKILL.md ~/.claude/skills/offkai-helper/SKILL.md
+# 例: uranai-maker をインストール
+cp uranai-maker.md ~/.claude/commands/uranai-maker.md
 ```
 
-### 4. Claude Code を再起動する
+### 3. Claude Code を再起動
 
-Claude Code を一度終了して、再度起動してください。
+Claude Code を一度終了して、再起動してください。
+
+```bash
+/exit
+claude
+```
+
+### 4. 使ってみる
+
+```
+/uranai-maker
+```
 
 ---
 
-## 使い方
+## スキルの説明
 
-Claude Code を開いて、次のように入力してください：
+### 🔮 uranai-maker
+質問に答えるだけでオリジナルの占いアプリ（HTML）を自動生成します。
+- 昆虫占い・お魚占い・家電占いなど、テーマは自由
+- 誕生日入力・質問形式の両方に対応
+- 生成した HTML は Cloudflare Pages にそのまま公開できる
 
-```
-/offkai-helper
-```
-
-クロコ先生 🐊 が起動して、質問文づくりをお手伝いします！
-
----
-
-## こんなときに使えます
-
-- 「何かわからないことがあるけど、どう聞けばいいかわからない」
-- 「うまく言葉にできなくて困っている」
-- 「恥ずかしくて聞きにくい」
-
-そんなときにクロコ先生に話しかけてみてください。
-オフ会で使える質問文に変えてくれますよ！
+### 🐊 offkai-helper
+Claude Code オフ会で使える質問文を作ってくれるスキルです。
+モヤッとした悩みを入力するだけで、他の参加者に聞きやすい質問文を丁寧版・カジュアル版の2パターンで生成します。
