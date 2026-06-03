@@ -10,7 +10,8 @@
 | スキル名 | コマンド | 説明 |
 |---|---|---|
 | offkai-helper.md | `/offkai-helper` | オフ会で使える質問文を作ってくれる |
-| uranai-maker.md | `/uranai-maker` | オリジナル占いアプリを対話形式で自動生成 |
+| uranai-maker.md | `/uranai-maker` | オリジナル占いアプリを対話形式で自動生成（HTML出力） |
+| uranai-workers.md | `/uranai-workers` | オリジナル占いアプリを作成して Cloudflare Workers に自動デプロイ |
 
 ---
 
@@ -34,6 +35,9 @@ git clone https://github.com/iidaatcnt/offkai-helper-skills.git
 # コマンドフォルダを作成（初回のみ）
 mkdir -p ~/.claude/commands
 
+# 例: uranai-workers をインストール
+cp uranai-workers.md ~/.claude/commands/uranai-workers.md
+
 # 例: uranai-maker をインストール
 cp uranai-maker.md ~/.claude/commands/uranai-maker.md
 
@@ -53,12 +57,24 @@ claude
 ### 4. 使ってみる
 
 ```
-/uranai-maker
+/uranai-workers
 ```
 
 ---
 
 ## スキルの説明
+
+### 🚀 uranai-workers
+質問に答えるだけでオリジナルの占いアプリを自動生成し、**Cloudflare Workers に自動でデプロイ**します。
+- 昆虫占い・フルーツ占い・家電占いなど、テーマは自由
+- 誕生日入力・質問形式の両方に対応
+- `wrangler deploy` まで全自動で実行し、公開URLを表示
+
+**事前準備（初回のみ）**
+```bash
+npm install -g wrangler
+wrangler login
+```
 
 ### 🔮 uranai-maker
 質問に答えるだけでオリジナルの占いアプリ（HTML）を自動生成します。
