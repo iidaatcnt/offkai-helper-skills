@@ -1,6 +1,6 @@
 ---
-name: uranai_workers
-description: オリジナル占いアプリを対話形式で作成し、Cloudflare Workers にデプロイできるコードを生成するスキル。index.html ではなく src/index.js + wrangler.toml の構成で出力する本格 Web アプリ版。ユーザーが「Workersで占いを作りたい」「Workersで診断アプリを作って」「本格的な占いアプリを作りたい」「/uranai_workers」と言ったら必ずこのスキルを起動すること。
+name: uranai-workers
+description: オリジナル占いアプリを対話形式で作成し、Cloudflare Workers にデプロイできるコードを生成するスキル。index.html ではなく src/index.js + wrangler.toml の構成で出力する本格 Web アプリ版。ユーザーが「Workersで占いを作りたい」「Workersで診断アプリを作って」「本格的な占いアプリを作りたい」「/uranai-workers」と言ったら必ずこのスキルを起動すること。
 ---
 
 # uranai_workers — オリジナル占いアプリ ジェネレーター（Cloudflare Workers版）
@@ -171,6 +171,15 @@ year.innerHTML += `<option value="${y}">${y}年</option>`;
 
 // ✅ 正しい（バッククォートと${} を両方エスケープ）
 year.innerHTML += \`<option value="\${y}">\${y}年</option>\`;
+```
+
+**【推奨】エスケープ事故を防ぐ書き方:**
+HTML 内の JavaScript では、テンプレートリテラルの代わりに **文字列連結（`+`）** を使うと
+エスケープが一切不要になり、事故を防げる。
+
+```javascript
+// テンプレートリテラルを使わず、文字列連結で書く（エスケープ不要・安全）
+year.insertAdjacentHTML('beforeend', '<option value="' + y + '">' + y + '年</option>');
 ```
 
 ---
