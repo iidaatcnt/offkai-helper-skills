@@ -1,0 +1,309 @@
+---
+name: uranai_workers
+description: オリジナル占いアプリを対話形式で作成し、Cloudflare Workers にデプロイできるコードを生成するスキル。index.html ではなく src/index.js + wrangler.toml の構成で出力する本格 Web アプリ版。ユーザーが「Workersで占いを作りたい」「Workersで診断アプリを作って」「本格的な占いアプリを作りたい」「/uranai_workers」と言ったら必ずこのスキルを起動すること。
+---
+
+# uranai_workers — オリジナル占いアプリ ジェネレーター（Cloudflare Workers版）
+
+ユーザーへの質問に答えてもらうだけで、オリジナルの占いアプリを生成する。
+生成物は **Cloudflare Workers** にデプロイできる構成（`src/index.js` + `wrangler.toml`）で出力する。
+`npx wrangler deploy` の1コマンドで本物の Web アプリとして世界に公開できる。
+
+---
+
+## ステップ1: インタビュー
+
+以下の質問を **1つずつ** 順番に聞いていく。全部まとめて聞かない。
+前の答えを受けて次の質問をするように、会話を自然につなぐ。
+
+### 質問リスト
+
+1. **プロジェクト名（英数字・ハイフンのみ）**
+   「Cloudflare Workers のプロジェクト名を決めましょう。
+   英数字とハイフンだけ使えます。（例：fruits-uranai、insect-uranai、pan-uranai）
+   ※ これが公開URLの一部になります（例：fruits-uranai.あなたのID.workers.dev）」
+
+2. **テーマ**
+   「どんな占いにしますか？（例：昆虫占い、お魚占い、家電占い、なんでもOK）」
+
+3. **キャラクター数**
+   「何種類のキャラクターに分けますか？（例：6・8・12など）」
+
+4. **キャラクター名**
+   「キャラクターの名前を教えてください。{数}種類分。
+   （思いつかない場合は『考えて』と言ってもらえれば提案します）」
+
+5. **各キャラクターの説明**
+   「各キャラクターの性格・特徴を一言で教えてください。
+   （思いつかない場合は『考えて』と言ってもらえれば提案します）」
+
+6. **判定方法**
+   「判定方法はどうしますか？
+   　A) 誕生日（生年月日）を入力して判定
+   　B) 質問に答えて判定（性格診断タイプ）
+   　C) 両方使う」
+
+   - **A または C を選んだ場合**: 誕生日から判定するアルゴリズムを自動設計する（ユーザーへの説明は不要）
+   - **B または C を選んだ場合**: 「どんな質問をしますか？いくつくらい？（例：3〜5問）」と聞く。質問内容は提案してもよい。
+
+7. **デザインの雰囲気**
+   「デザインはどんな雰囲気にしますか？
+   　例：かわいい系・クール系・ポップ系・和風・シンプル など」
+
+8. **カラー**
+   「メインカラーはありますか？（例：ピンク、青、緑など。なければ『おまかせ』でOK）」
+
+9. **タイトル**
+   「占いアプリのタイトルを教えてください。（例：『あなたはどの昆虫？』）」
+
+---
+
+## ステップ2: 確認
+
+インタビューが終わったら、収集した情報を箇条書きで整理してユーザーに見せる。
+「この内容でアプリを作ります。よろしいですか？」と確認してから生成に進む。
+
+---
+
+## ステップ3: アプリ生成
+
+### 出力フォルダ構成
+
+```
+{プロジェクト名}/
+├── src/
+│   └── index.js    ← HTML/CSS/JS をすべて内包する Workers プログラム
+└── wrangler.toml   ← Cloudflare 設定ファイル
+```
+
+---
+
+### wrangler.toml の内容
+
+```toml
+name = "{プロジェクト名}"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+preview_urls = false
+```
+
+**`preview_urls = false` は必ず設定すること**（省略禁止）。
+これを省略すると認証をバイパスされるセキュリティリスクがある。
+
+---
+
+### src/index.js の構造
+
+HTML コンテンツ全体をテンプレートリテラルで `const HTML` に格納し、
+Workers の fetch ハンドラーでそのまま返す。
+
+```javascript
+const HTML = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  ...（HTMLヘッダー）
+</head>
+<body>
+  ...（HTML本文）
+<script>
+  ...（JavaScriptコード）
+</script>
+</body>
+</html>`;
+
+export default {
+  async fetch(request, env, ctx) {
+    return new Response(HTML, {
+      headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+    });
+  },
+};
+```
+
+---
+
+### ⚠️ エスケープの絶対ルール（最重要）
+
+`src/index.js` の外側はテンプレートリテラル（バッククォート）で囲まれている。
+HTML の中の JavaScript でもテンプレートリテラルを使う場合、**必ずエスケープする**。
+
+| 書きたいもの | src/index.js での書き方 |
+|---|---|
+| バッククォート `` ` `` | `` \` `` |
+| `${変数}` | `\${変数}` |
+| 通常の文字列 `'...'` `"..."` | そのまま（エスケープ不要） |
+
+**エスケープが必要な典型例:**
+
+```javascript
+// ❌ 間違い（外側のテンプレートリテラルが壊れる）
+year.innerHTML += `<option value="${y}">${y}年</option>`;
+
+// ✅ 正しい（バッククォートと${} を両方エスケープ）
+year.innerHTML += \`<option value="\${y}">\${y}年</option>\`;
+```
+
+---
+
+### HTML/CSS/JS の要件
+
+- **1ファイル完結**（外部ライブラリ・CDN 不使用）
+- スマートフォンで見やすいレスポンシブデザイン（`max-width: 480px` 推奨）
+- 文字コードは UTF-8
+
+---
+
+### 画面構成（必須）
+
+**1. タイトル画面**
+- タイトルとキャッチコピー
+- テーマに合った大きな絵文字（`@keyframes float` で浮遊アニメーション）
+- 「診断スタート」ボタン
+
+**2. 生年月日入力画面**（判定方法 A または C の場合）
+- 年・月・日のセレクトボックス
+- 「次へ →」ボタン
+
+**3. 質問画面**（判定方法 B または C の場合）
+- 質問を1問ずつ表示
+- 進捗インジケーター（例：`QUESTION 1 / 3`）
+- 選択肢ボタン（クリックで自動的に次へ）
+
+**4. 分析中画面**（必ず入れる）
+- 最後の入力・回答直後に表示
+- プログレスバーが 0 → 100% に伸びる
+- メッセージが段階的に切り替わる（5ステップ、各 500ms）
+- 例：「データを解析中...」→「性格パターンを照合中...」→「キャラクターを選定中...」
+- 2.5秒後に自動で結果画面へ遷移
+
+**5. 結果画面**
+- キャラクター絵文字（大きく、`@keyframes pop` でポップアニメーション）
+- `YOUR {テーマ}` タグ
+- キャラクター名（大きく）
+- キャラクターの説明文
+- ラッキーカラー・ラッキーナンバー（2列）
+- 相性のいいキャラクター
+- 仕事・恋愛・お金の運勢（各1行）
+- 今月の運勢（現在月で3パターン切替: `new Date().getMonth() % 3`）
+- 「もう一度診断する」ボタン
+
+---
+
+### ボタンの効果音（必ず実装）
+
+Web Audio API を使い、外部ファイルなしで効果音を実装する。
+`try { ... } catch(e) {}` で囲み、非対応ブラウザでもエラーにならないようにする。
+
+```javascript
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.value = 0.25;
+    master.connect(ctx.destination);
+    function tone(freq, startAt, dur) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.8, ctx.currentTime + startAt);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + dur);
+      osc.connect(g); g.connect(master);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + dur + 0.05);
+    }
+    const sounds = {
+      start:   [[523,0,.15],[659,.1,.15],[784,.2,.25]],
+      next:    [[659,0,.1],[784,.09,.18]],
+      select:  [[880,0,.09]],
+      result:  [[523,0,.1],[659,.09,.1],[784,.18,.1],[1047,.27,.35]],
+      restart: [[784,0,.1],[659,.1,.1],[523,.2,.18]],
+    };
+    (sounds[type] || []).forEach(([f, s, d]) => tone(f, s, d));
+  } catch(e) {}
+}
+```
+
+各ボタンの `onclick` に `playSound('start')` などを追加する。
+選択肢ボタンは `playSound('select')` を `answerQuestion()` の前に呼ぶ。
+結果表示関数の冒頭で `playSound('result')` を呼ぶ。
+
+---
+
+### 判定アルゴリズム
+
+**誕生日スコア（A または C の場合）:**
+```javascript
+birthdayScore = ((年の下2桁) + 月 + 日) % キャラクター数
+```
+
+**質問スコア（B または C の場合）:**
+各選択肢にタイプ別スコアを割り当て（例：`[3, 0, 0, 0]`）、合計点でタイプを決定。
+同点の場合はランダムに1つ選ぶ。
+
+**最終判定（C の場合）:**
+タイプ内のキャラクターを `birthdayScore % グループ数` で絞り込む。
+
+---
+
+### キャラクターデータの構成（充実版）
+
+```javascript
+const CHARACTERS = [
+  {
+    name: 'キャラクター名',
+    emoji: '🦋',
+    desc: '短い説明文（2文以内）',
+    luckyColor: '🔴 赤',
+    luckyNumber: 7,
+    compatible: ['キャラA', 'キャラB'],
+    work: '仕事の運勢（15文字以内）',
+    love: '恋愛の運勢（15文字以内）',
+    money: 'お金の運勢（15文字以内）',
+    monthly: ['今月の一言A', '今月の一言B', '今月の一言C'],
+  },
+  // ... 全キャラクター分
+];
+```
+
+---
+
+## ステップ4: 完成後のメッセージ
+
+アプリ生成後、以下を伝える：
+
+```
+✅ 占いアプリが完成しました！（Cloudflare Workers版）
+
+📁 フォルダ構成:
+{プロジェクト名}/
+├── src/index.js
+└── wrangler.toml
+
+【デプロイ手順】
+
+① フォルダに移動
+   cd {プロジェクト名}
+
+② Cloudflare にログイン（初回のみ）
+   npx wrangler login
+
+③ デプロイ！
+   npx wrangler deploy
+
+④ 表示された URL にアクセスして確認
+   https://{プロジェクト名}.{アカウント名}.workers.dev
+
+🎉 これで本物の Web アプリが世界に公開されました！
+
+【ローカルで動作確認する場合】
+   npx wrangler dev
+   → ブラウザで http://localhost:8787 を開く
+
+【GitHub で管理する場合】
+   git init
+   echo ".wrangler/" > .gitignore
+   git add .
+   git commit -m "first commit"
+   gh repo create {プロジェクト名} --private --source=. --remote=origin --push
+```
