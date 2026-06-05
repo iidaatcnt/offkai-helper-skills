@@ -307,7 +307,16 @@ const CHARACTERS = [
 
 【GitHub で管理する場合】
    git init
-   echo ".wrangler/" > .gitignore
+
+   .gitignore ファイルを以下の内容で作成すること：
+   ---
+   .wrangler/
+   node_modules/
+   .env
+   .env.local
+   .DS_Store
+   ---
+
    git add .
    git commit -m "first commit"
    gh repo create {プロジェクト名} --private --source=. --remote=origin --push
